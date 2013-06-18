@@ -7,6 +7,7 @@
 #include <fvar.hpp>
 #include <string.h>
 #include <stdlib.h>
+#include <safe_mem.h>
 
 adstring::adstring(const char * t) : clist()
 {
@@ -15,7 +16,10 @@ adstring::adstring(const char * t) : clist()
   {
     sz = strlen (t);
   }
+//  shape = new adstring_shape(sz);
+//  s = new char[size_t(sz + 1)];
   allocate(sz);
+  s--;
   for (unsigned int i = 1; i <= sz; i++)
   {
     s[i] = t[i - 1];
@@ -23,10 +27,14 @@ adstring::adstring(const char * t) : clist()
   s[sz + 1] = '\0';
 }
 
+//js
 adstring::adstring(void) : clist()
 {
   unsigned int sz = 0;
+//  shape = new adstring_shape(sz);
+//  s = new char[size_t(sz + 1)];
   allocate(sz);
+  s--;
   s[sz + 1] = '\0';
 }
 

@@ -6,31 +6,9 @@ if [%1]==[] goto HELP
 if [%1]==[-help] goto HELP
 if [%1]==[--help] goto HELP
 
-if defined ADMB_HOME (
-  set "ADMB_HOME="
-)
-for %%a in (%0.bat) do (
-  set HAS_PATH=%%~$PATH:a
-  if not "!HAS_PATH!"=="" (
-    set ADMB_PATH="%%~dp$PATH:a"
-  ) else (
-    set ADMB_PATH="%%~dpa"
-  )
-  pushd !ADMB_PATH!\..
-  set ADMB_HOME=!CD!
-  popd
-)
-if not "!MINGW_HOME!"=="" (
-  set PATH=!ADMB_HOME!\bin;!MINGW_HOME!\bin;!PATH!
-) else (
-  set PATH=!ADMB_HOME!\bin;!PATH!
-)
-
 set srcs=
 set tpls=
 set objs=
-set s=-s 
-set bounds=-bounds
 
 for %%a in (%*) do (
   set arg=%%a
@@ -49,10 +27,6 @@ for %%a in (%*) do (
     if %%a==-s (
       set s=-s 
       set bounds=-bounds
-    )
-    if %%a==-O (
-      set s=
-      set bounds=
     )
   ) else (
     if "%%~xa"=="" (
@@ -79,11 +53,8 @@ for %%a in (%*) do (
 if not defined parser set parser=tpl2cpp
 
 for %%a in (!tpls!) do (
-  set model=%%~na
   if not exist %%~na.tpl goto ERROR1
-  del classdef.tmp xxdata.tmp xxhtop.tmp xxhtopm.tmp xxglobal.tmp xxtopm.tmp 2> NUL
-  del xxalloc.tmp xxalloc1.tmp xxalloc2.tmp xxalloc3.tmp xxalloc4.tmp xxalloc5.tmp xxalloc6.tmp header.tmp 2> NUL
-  del tfile1 tfile2 tfile3 tfile4 tfile5 2> NUL
+  set model=%%~na
   del !model!.cpp !model!.htp !model!.obj !model!.exe 2> NUL
   set CMD=!parser! !bounds! !dll! !model!
   echo.&echo *** !CMD!
@@ -132,8 +103,7 @@ echo.
 echo   -d     Create DLL
 echo   -g     Insert debugging symbols
 echo   -r     Create ADMB-RE
-echo   -s     Enforce safe bounds (default)
-echo   -O     Use optimized mode
+echo   -s     Enforce safe bounds
 echo   model  Filename prefix, e.g. simple
 echo.
 goto EOF
@@ -144,7 +114,6 @@ goto EOF
 
 :ERROR2
 echo.&echo Error: Could not parse !model!.tpl
-pwd
 goto EOF
 
 :EOF

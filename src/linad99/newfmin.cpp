@@ -10,8 +10,8 @@
  *
  */
 /**
-  \file newfmin.cpp
-  Souce code for quasi-Newton function minimizer.
+ * \file
+ * Description not yet available.
  */
 
 #include <fvar.hpp>
@@ -183,11 +183,8 @@ BOOL CtrlHandler( DWORD fdwCtrlType )
 #endif
 
 /**
- Quasi-Newton function minimizer.
-  \param _f Value of function to be minimized.
-  \param _x Vector of independent variables.
-  \param _g Vector containing the partial derivatives of _f with respect to 
-   each independent variable. The gradient vector returned by \ref gradcalc.
+ * Description not yet available.
+ * \param
  */
 void fmm::fmin(const double& _f, const dvector &_x, const dvector& _g)
 {
@@ -447,15 +444,15 @@ label21 :
       pfmintime->get_elapsed_time_and_reset();
       for (i=2; i<=n; i++)
       {
-	      i1=i-1;
-        z=-g.elem(i);
-        double * pd=&(h.elem(i,1));
-        double * pw=&(w.elem(1));
-        for (j=1; j<=i1; j++)
-        {
-          z-=*pd++ * *pw++;
-        }
-        w.elem(i)=z;
+	 i1=i-1;
+         z=-g.elem(i);
+         double * pd=&(h.elem(i,1));
+         double * pw=&(w.elem(1));
+         for (j=1; j<=i1; j++)
+         {
+            z-=*pd++ * *pw++;
+         }
+         w.elem(i)=z;
       }
       w.elem(is+n)=w.elem(n)/h.elem(n,n);
       {
@@ -491,20 +488,20 @@ label30:
       if (ialph) { goto label92; }
       if( ifn >= maxfn)
       {
-        maxfn_flag=1;
-        goto label92;
+         maxfn_flag=1;
+         goto label92;
       }
       else
       {
-        maxfn_flag=0;
-        iexit=1;
+         maxfn_flag=0;
+         iexit=1;
       }
       if(quit_flag) goto label92;
       for (i=1; i<=n; i++)
-      {
-        z=alpha*w.elem(is+i);
-        xx.elem(i)+=z;
-      }
+         {
+         z=alpha*w.elem(is+i);
+         xx.elem(i)+=z;
+         }
       for (i=1; i<=n; i++)
       {
         xsave.elem(i)=x.elem(i);
@@ -874,9 +871,8 @@ label7020:
    }
 
 /**
-  Robust square root.
-  \param x Double precision argunent \f$x; x \ge 0\f$.
-  \return \f$\sqrt{x}\f$ for \f$x>0\f$, 0 otherwise.
+ * Description not yet available.
+ * \param
  */
    double dafsqrt( double x )
    {

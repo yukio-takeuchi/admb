@@ -1,96 +1,76 @@
-.NOPARALLEL: all
+.PHONY: all ad2csv statslib ecolib qfclib libcontribo.a libcontribs.a test clean
 
-ifneq ($(SHELL),sh.exe)
-DISK=../build/dist
+ifeq ($(CXX),CC)
+CXXFLAGS:=-c $(CXXFLAGS) -DUSE_LAPLACE -I../${DISK}/include -D__SPDLL__ -D__GNUDOS__ -Dlinux -I../${DISK}/include
 else
-DISK=..\build\dist
-  ifndef MINGW_HOME
-    PATH:=..\..\utilities\mingw\bin:$(PATH)
-    AR=..\utilities\mingw\bin\ar
-    MAKE=..\utilities\make
-  endif
+CXXFLAGS:=-c $(CXXFLAGS) -Wall -DUSE_LAPLACE -D__SPDLL__ -D__GNUDOS__ -Dlinux -I../${DISK}/include
 endif
 
-ifndef LIBPATH
-LIBPATH=../../build/objects/dist
-endif
-
-ad2csv: build-ad2csv
-
-all: build-gdbprintlib build-statslib build-ecolib build-qfclib build-src
-ifneq ($(SHELL),sh.exe)
-	$(AR) -rs $(DISK)/contrib/lib/libcontrib.a ../build/objects/dist/saflp-contrib-*.obj
-	$(AR) -rs $(DISK)/contrib/lib/libcontribo.a ../build/objects/dist/optlp-contrib-*.obj
+ifeq ($(CXX),g++.exe)
+LIBPATH_SAFE=..\${LIBPATH}\contrib-slp
+LIBPATH_OPT=..\${LIBPATH}\contrib-olp
+LIBPATH_SAFE2=${LIBPATH}\contrib-slp
+LIBPATH_OPT2=${LIBPATH}\contrib-olp
+DISKDIR=..\${DISK}\contrib
 else
-	$(AR) -rs $(DISK)\contrib\lib\libcontrib.a ..\build\objects\dist\saflp-contrib-*.obj
-	$(AR) -rs $(DISK)\contrib\lib\libcontribo.a ..\build\objects\dist\optlp-contrib-*.obj
+LIBPATH_SAFE=../${LIBPATH}/contrib-slp
+LIBPATH_OPT=../${LIBPATH}/contrib-olp
+LIBPATH_SAFE2=${LIBPATH}/contrib-slp
+LIBPATH_OPT2=${LIBPATH}/contrib-olp
+DISKDIR=../${DISK}/contrib
 endif
 
-build-gdbprintlib:
-	$(MAKE) --directory=gdbprintlib CXX=$(CXX) CXXFLAGS="-DSAFE_ALL $(CXXFLAGS) -I\"$(ADMB_HOME)/include\"" PREFIX_OBJ=$(LIBPATH)/saflp-contrib-gdbprintlib-
-ifeq ($(SHELL),sh.exe)
-	copy gdbprintlib\gdbprintlib.h $(DISK)\contrib\include
+all: disk statslib ecolib qfclib libcontribo.a libcontribs.a ad2csv
+
+disk:
+ifeq ($(CXX),g++.exe)
+	if not exist ${DISK}\contrib md ${DISK}\contrib
+	if not exist ${LIBPATH}\contrib-olp md ${LIBPATH}\contrib-olp
+	if not exist ${LIBPATH}\contrib-slp md ${LIBPATH}\contrib-slp
+	copy contrib.h ${DISK}\contrib
 else
-	cp gdbprintlib/gdbprintlib.h $(DISK)/contrib/include
+	mkdir -p ${DISK}/contrib
+	mkdir -p ${LIBPATH}/contrib-olp
+	mkdir -p ${LIBPATH}/contrib-slp
+	cp contrib.h ${DISK}/contrib
 endif
 
-build-statslib:
-	$(MAKE) --directory=statslib CXX=$(CXX) CXXFLAGS="-DSAFE_ALL $(CXXFLAGS) -I\"$(ADMB_HOME)/include\"" PREFIX_OBJ=$(LIBPATH)/saflp-contrib-statslib-
-	$(MAKE) --directory=statslib CXX=$(CXX) CXXFLAGS="-DOPT_LIB $(CXXFLAGS) -I\"$(ADMB_HOME)/include\"" PREFIX_OBJ=$(LIBPATH)/optlp-contrib-statslib-
-ifeq ($(SHELL),sh.exe)
-	copy statslib\statsLib.h $(DISK)\contrib\include
+ad2csv:
+ifeq ($(CXX),g++.exe)
+	$(MAKE) --directory=$@ ADMB_HOME=..\${DISK} PATH="..\${DISK}\bin;$(PATH)"
 else
-	cp statslib/statsLib.h $(DISK)/contrib/include
+	ADMB_HOME=../${DISK} PATH="../${DISK}/bin:$(PATH)" $(MAKE) --directory=$@
 endif
 
-build-ecolib:
-	$(MAKE) --directory=ecolib CXX=$(CXX) CXXFLAGS="-DSAFE_ALL $(CXXFLAGS) -I\"$(ADMB_HOME)/include\"" PREFIX_OBJ=$(LIBPATH)/saflp-contrib-ecolib-
-	$(MAKE) --directory=ecolib CXX=$(CXX) CXXFLAGS="-DOPT_LIB $(CXXFLAGS) -I\"$(ADMB_HOME)/include\"" PREFIX_OBJ=$(LIBPATH)/optlp-contrib-ecolib-
-ifeq ($(SHELL),sh.exe)
-	copy ecolib\ecolib.h $(DISK)\contrib\include
-else
-	cp ecolib/ecolib.h $(DISK)/contrib/include
-endif
+statslib:
+	$(MAKE) --directory=$@ CXX=$(CXX) CXXFLAGS="-DOPT_LIB $(CXXFLAGS)" LIBPATH=$(LIBPATH_OPT) DISKDIR=$(DISKDIR)
+	$(MAKE) --directory=$@ CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" LIBPATH=$(LIBPATH_SAFE) DISKDIR=$(DISKDIR)
 
-build-qfclib:
-	$(MAKE) --directory=qfclib CXX=$(CXX) CXXFLAGS="-DSAFE_ALL $(CXXFLAGS) -I\"$(ADMB_HOME)/include\"" PREFIX_OBJ=$(LIBPATH)/saflp-contrib-qfclib-
-	$(MAKE) --directory=qfclib CXX=$(CXX) CXXFLAGS="-DOPT_LIB $(CXXFLAGS) -I\"$(ADMB_HOME)/include\"" PREFIX_OBJ=$(LIBPATH)/optlp-contrib-qfclib-
-ifeq ($(SHELL),sh.exe)
-	copy qfclib\qfclib.h $(DISK)\contrib\include
-else
-	cp qfclib/qfclib.h $(DISK)/contrib/include
-endif
+ecolib:
+	$(MAKE) --directory=$@ CXX=$(CXX) CXXFLAGS="-DOPT_LIB $(CXXFLAGS)" LIBPATH=$(LIBPATH_OPT) DISKDIR=$(DISKDIR)
+	$(MAKE) --directory=$@ CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" LIBPATH=$(LIBPATH_SAFE) DISKDIR=$(DISKDIR)
 
-build-ad2csv: all
-ifneq ($(SHELL),sh.exe)
-	$(MAKE) --directory=ad2csv ADMB_HOME="$(ADMB_HOME)"
-endif
+qfclib:
+	$(MAKE) --directory=$@ CXX=$(CXX) CXXFLAGS="-DOPT_LIB $(CXXFLAGS)" LIBPATH=$(LIBPATH_OPT) DISKDIR=$(DISKDIR)
+	$(MAKE) --directory=$@ CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" LIBPATH=$(LIBPATH_SAFE) DISKDIR=$(DISKDIR)
 
-build-admb2r:
-ifneq ($(SHELL),sh.exe)
-	$(MAKE) --directory=admb2r ADMB_HOME="$(ADMB_HOME)" gcc
-endif
+libcontribo.a:
+	$(AR) -rs ${DISK}/contrib/$@ $(LIBPATH_OPT2)/*.obj
 
-build-src:
-	$(MAKE) --directory=src CXX=$(CXX) CXXFLAGS="-DOPT_LIB $(CXXFLAGS) -I\"$(ADMB_HOME)/include\"" PREFIX_OBJ=$(LIBPATH)/optlp-contrib-
-	$(MAKE) --directory=src CXX=$(CXX) CXXFLAGS="-DSAFE_ALL $(CXXFLAGS) -I\"$(ADMB_HOME)/include\"" PREFIX_OBJ=$(LIBPATH)/saflp-contrib-
-ifeq ($(SHELL),sh.exe)
-	copy src\contrib.h $(DISK)\contrib\include
-else
-	cp src/contrib.h $(DISK)/contrib/include
-endif
+libcontribs.a:
+	$(AR) -rs ${DISK}/contrib/$@ $(LIBPATH_SAFE2)/*.obj
 
 test:
-	$(MAKE) --directory=src ADMB_HOME="$(ADMB_HOME)" test 
-
-test-needR:
-	$(MAKE) --directory=ecolib ADMB_HOME="$(ADMB_HOME)" test
-	$(MAKE) --directory=qfclib ADMB_HOME="$(ADMB_HOME)" test
+	CXXFLAGS="" $(MAKE) --directory=ecolib test
+	CXXFLAGS="" $(MAKE) --directory=qfclib test
 
 clean:
-	@$(MAKE) --directory=gdbprintlib clean
-	@$(MAKE) --directory=ecolib clean
-	@$(MAKE) --directory=qfclib clean
-	@$(MAKE) --directory=statslib clean
-	@$(MAKE) --directory=ad2csv clean
-	@$(MAKE) --directory=src clean
+	@rm -rvf build
+	$(MAKE) --directory=ecolib clean
+	$(MAKE) --directory=qfclib clean
+	$(MAKE) --directory=statslib clean
+ifeq ($(CXX),g++.exe)
+	rm -rf $(DISKDIR)
+	rm -rf $(LIBPATH_OPT)
+	rm -rf $(LIBPATH_SAFE)
+endif

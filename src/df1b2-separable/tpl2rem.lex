@@ -409,9 +409,7 @@ PRELIMINARY_CALCS_SECTION  {
       }
     }
     fprintf(fall,"%s","\nvoid model_parameters::preliminary_calculations(void) \n{\n");
-    fprintf(fall,"%s","\n  #if defined(USE_ADPVM)\n");
     fprintf(fall,"%s","\n  admaster_slave_variable_interface(*this);\n");
-    fprintf(fall,"%s","\n  #endif\n");
   }
                 }
 
@@ -3450,16 +3448,14 @@ DATA_SECTION  {
     //strcat(tmp_string4,tmp_string2); //define prior_** in priors.cpp file, should be neg.log.likelihood.form
     trim(tmp_string); trim(tmp_string3);
    
-    {
-      int i=0; //check if the prior variable from init_ parameter section
-      while(prior_check(prior_checker[i],tmp_string)!=0){
+    int i=0; //check if the prior variable from init_ parameter section
+    while(prior_check(prior_checker[i],tmp_string)!=0){
       //printf(" idx %d tot %d, prior %s, parameter %s\n",i,prior_counter, tmp_string,prior_checker[i]);    
-        if(i == (prior_counter-1)){//still not found for the last one
-          printf("Warning: Prior ( %s ) is not defined on a parameter\n",tmp_string);
-          break;
-        }
-        i++;
+      if(i == (prior_counter-1)){//still not found for the last one
+        printf("Warning: Prior ( %s ) is not defined on a parameter\n",tmp_string);
+        break;
       }
+      i++;
     }
     
     if(prior_function_toggle==0) 
@@ -3489,16 +3485,14 @@ DATA_SECTION  {
     //strcat(like_str,tmp_string2); //define like_** in priors.cpp file, should be neg.log.likelihood.form
     trim(tmp_string); trim(tmp_string3);
   
-    {
-      int i=0; //check if the likelihood variable from data section
-      while(prior_check(likelihood_checker[i],tmp_string)!=0){
-        //printf(" idx %d tot %d, %s, %s\n",i,likelihood_counter, tmp_string,likelihood_checker[i]);    
-        if(i == (likelihood_counter-1)){//still not found for the last one
-          printf("Warning: likelihood ( %s ) is not defined on a data_section variable\n",tmp_string);
-          break;
-        }
-        i++;
+    int i=0; //check if the likelihood variable from data section
+    while(prior_check(likelihood_checker[i],tmp_string)!=0){
+      //printf(" idx %d tot %d, %s, %s\n",i,likelihood_counter, tmp_string,likelihood_checker[i]);    
+      if(i == (likelihood_counter-1)){//still not found for the last one
+        printf("Warning: likelihood ( %s ) is not defined on a data_section variable\n",tmp_string);
+        break;
       }
+      i++;
     }
    
     if(prior_function_toggle==0) 
@@ -4354,10 +4348,7 @@ TOP_OF_MAIN_SECTION {
     {
       fprintf(fall,"\nvoid model_parameters::preliminary_calculations(void)"
         "{");
-      fprintf(fall,"%s","\n  #if defined(USE_ADPVM)\n");
-      fprintf(fall,"%s","\n  admaster_slave_variable_interface(*this);\n");
-      fprintf(fall,"%s","\n  #endif\n");
-      fprintf(fall,"%s","\n}\n");
+      fprintf(fall,"%s","\n  admaster_slave_variable_interface(*this);\n  }\n");
     }
 
     fprintf(fall,"\nmodel_data::~model_data()\n"
@@ -4582,8 +4573,7 @@ TOP_OF_MAIN_SECTION {
      fprintf(ftopmain,"    mp.computations(argc,argv);\n");
 #endif
 
-    fprintf(htop,"#include <admodel.h>\n");
-    fprintf(htop,"#include <contrib.h>\n\n");
+    fprintf(htop,"#include <admodel.h>\n\n");
     if (random_effects_flag)
     {
       fprintf(htop,"#include <df1b2fun.h>\n\n");
@@ -4988,7 +4978,7 @@ char * get_directory_name(const char * s)
   int i,j;
   char * path1=getenv("ADMB_HOME");
   /* char sed_file_separator='/'; */
-#if defined(_WIN32)
+#if defined(WIN32)
   char file_separator='\\';
   char file_separator_string[]="\\";
 #else
@@ -5550,6 +5540,7 @@ void  get_next_argument(char * buffer,char * arg)
 }
 void write_getindex_stuff(char *str)
 {
+  int icount;
   /* char * argptr; */
   int paren_level=0;
   char * last_paren;
@@ -5580,6 +5571,7 @@ void write_getindex_stuff(char *str)
     get_next_argument(buffer,&(function_arg[0]));
     if (strlen(function_arg)==0) break;
     fprintf(fall,"  ADMB_getcallindex(%s);\n",function_arg);
+    icount++;
   }
   while(1);
   // XNESTED
@@ -5903,5 +5895,5 @@ void print_quadratic_random_effect_penalty_class(char *text)
        if(i==(strlen(prior)-1) && cnt<strlen(parameter)) return 1; //until the end still not found
      } //end for loop
    }
-   return 1; //not found
+   else return 1; //not found
  }

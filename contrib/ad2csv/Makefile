@@ -1,4 +1,5 @@
-all:
+ad2csv:
 	adcomp ad2csv
-	adcomp main
-	adlink ad2csv main
+	adlink ad2csv
+clean:
+	@rm -vf ad2csv.o

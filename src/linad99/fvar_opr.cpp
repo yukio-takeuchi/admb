@@ -5,9 +5,11 @@
  * Copyright (c) 2008-2012 Regents of the University of California 
  */
 /**
-  \file
- Overloads of arithmetic operators for variable arguments. 
+ * \file
+ * Description not yet available.
  */
+// file: fvar_ops.cpp
+// operators involving prevariables
 
 #include "fvar.hpp"
 

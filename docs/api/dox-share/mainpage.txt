@@ -61,10 +61,6 @@ typically optimized for automatic differentiation and automatically
 invoke custom adjoint code.
 */
 
-/**  \defgroup prepros Preprosessor (tpl2cpp & tpl2rem)
-\details Document "tpl2cpp" and "tpl2rem" as well as their output files (.cpp and .htp)
-*/
-
 /** \defgroup DEVEL Development Utilities
 \details ADMB functions of use to developers of ADMB code.
 */
@@ -128,38 +124,3 @@ invoke custom adjoint code.
     \ingroup CONTRIB
     \details Contributed by Weihai Liu
 */
-
-// generate dox for directories
-/** \dir src
-Main AUTODIF and ADMB source code directories.
-*/
-/** \dir linad99
-Home of \ref fvar.hpp and the source files for most of th AUTODIF library.
-*/
-/** \dir nh99
-Source files for ADMB
-*/
-/** \dir df1b2-separable
-Source files for random effects models.
-*/
-/** \dir tools99
-Source files for "tools" such as the \ref cifstream and \ref adstring classes.
-*/
-/** \dir sparse
-Sparse matrix routines used for some special random effects models.
-*/
-/** \dir contrib
-Houses the contributed libraries
-*/
-/** \dir ecolib
-Source code for ECOL Functions Useful in Ecology;
-contributed by Mollie Brooks.
-*/
-/** \dir qfclib
-QFC Functions created at the Quantitative Fisheries Center(QFC), 
-Michigan State University; Contributed by Weihai Liu.
-*/ 
-/** \dir statslib
-STATLIB Statistical Fuctions; contributed by Steven Martell.
-*/
-

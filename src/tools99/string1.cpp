@@ -7,6 +7,7 @@
 #include <fvar.hpp>
 #include <string.h>
 #include <stdlib.h>
+//#include <safe_mem.h>
 #include "admb_messages.h"
 
 adstring adstring::operator()(int i, int j)
@@ -61,8 +62,12 @@ adstring& adstring::operator=(const adstring & t)
   {
     int sz = t.size ();
     shape->size() = t.size();
-    delete [] ++s;
-    s=new unsigned char[sz+1];
+    free(++s);
+  #if (defined __ZTC__) || (defined __NDPX__)
+    s =  (char*)malloc(sz+1);
+  #else
+    s =  (unsigned char*)malloc(sz+1);
+  #endif
     s--;
     int size = t.size();
     for (int i = 1; i <= size; i++)
@@ -85,8 +90,8 @@ void adstring::realloc(const char * t)
 {
   int sz = strlen(t);
   shape->size() = strlen(t);
-  delete [] ++s;
-  s=new unsigned char[sz+1];
+  free(++s);
+  s =  (unsigned char*)malloc(sz+1);
   strcpy((char*)(s),t);
   s--;
   adstring * tmp = (adstring *) this->next;
@@ -102,7 +107,8 @@ adstring::~adstring()
 {
   if (next==this)
   {
-    deallocate();
+    free(shape);
+    shape=0;
   }
 };
  

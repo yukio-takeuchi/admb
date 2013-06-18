@@ -1,39 +1,32 @@
 @echo off
 
 REM History:  24 May 2009  Arni Magnusson created
-REM           23 May 2013  Chris Grandin fix DLL creation, got rid of deprecated MSSDK
 
 setlocal EnableExtensions EnableDelayedExpansion
 if [%1]==[] goto HELP
 if [%1]==[-help] goto HELP
 if [%1]==[--help] goto HELP
-set OBJS=
+set objs=
 for %%a in (%*) do (
   set arg=%%a
   if "!arg:~0,1!"=="-" (
     if "!arg!"=="-s" (
-      set LIBS="%ADMB_HOME%"\lib\admb.lib "%ADMB_HOME%"\contrib\lib\contrib.lib
-    )
-    if "!arg!"=="-g" (
-      set DEBUG="/DEBUG"
-    )
-    if "!arg!"=="-d" (
-      set DLL="/DLL"
-      set FN="/OUT:%~n3.dll"
+      set libs=df1b2s.lib admod32s.lib ads32.lib adt32s.lib contribs.lib
     )
   ) else (
     if "%%~xa"=="" (
-      set OBJS=!OBJS! !arg!.obj
+      set objs=!objs! !arg!.obj
     ) else (
-      set OBJS=!OBJS! !arg!
+      set objs=!objs! !arg!
     )
   )
 )
 
-if not defined LIBS set LIBS="%ADMB_HOME%"\lib\admbo.lib "%ADMB_HOME%"\contrib\lib\contribo.lib
+if not defined libs set libs=df1b2o.lib admod32.lib ado32.lib adt32.lib contribo.lib
+set LIBPATH_MSSDK=/libpath:"%MSSDK%"\lib
 
 @echo on
-cl %OBJS% %LIBS% /link %DEBUG% %DLL% %FN%
+cl %objs% %libs% /link /libpath:"%ADMB_HOME%"\lib /libpath:"%ADMB_HOME%"\contrib
 @echo off
 
 goto EOF

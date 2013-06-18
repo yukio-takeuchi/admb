@@ -5,17 +5,14 @@
  * Copyright (c) 2008-2012 Regents of the University of California 
  */
 /**
-  \file minim.pp
-  Minimize artibrary user-supplied function.
+ * \file
+ * Description not yet available.
  */
 #include <fvar.hpp>
 
 /**
-  Minimize artibrary user-supplied function.
-  \param x Vector of independent variables
-  \param pf Pointer to function to be minmized with prototype
-  double pf(const dvar_vector&); 
-  \returns double containing value of the function at the minimum.
+ * Description not yet available.
+ * \param
  */
 double fmm::minimize(const independent_variables & x, double (*pf)(const dvar_vector&))
 {  

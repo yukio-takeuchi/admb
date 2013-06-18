@@ -1,29 +1,42 @@
-all: contribs
 
-contribs: build-src build-statslib build-qfclib build-ecolib
+all: disk
 
-build-statslib:
-	pushd statslib& ..\..\utilities\make CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" ADMB_HOME="$(ADMB_HOME)" PREFIX_OBJ=$(PREFIX_OBJ)statslib-
-	copy statslib\statsLib.h $(ADMB_HOME)\contrib\include
+disk:
+	rem cp contrib.h $(DISK)/contrib
 
-build-ecolib:
-	pushd ecolib& ..\..\utilities\make CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" ADMB_HOME="$(ADMB_HOME)" PREFIX_OBJ=$(PREFIX_OBJ)ecolib-
-	copy ecolib\ecolib.h $(ADMB_HOME)\contrib\include
+statslib-opt:
+	$(MAKE) CXXFLAGS="-DOPT_LIB $(CXXFLAGS)" DISKDIR=..\..\dist\contrib /f ..\..\..\..\contrib\statslib\Makefile
 
-build-qfclib:
-	pushd qfclib& ..\..\utilities\make CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" ADMB_HOME="$(ADMB_HOME)" PREFIX_OBJ=$(PREFIX_OBJ)qfclib-
-	copy qfclib\qfclib.h $(ADMB_HOME)\contrib\include
+statslib-saf:
+	$(MAKE) CXXFLAGS="$(CXXFLAGS)" DISKDIR=..\..\dist\contrib /f ..\..\..\..\contrib\statslib\Makefile
 
-build-src:
-	pushd src& ..\..\utilities\make CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" ADMB_HOME="$(ADMB_HOME)" PREFIX_OBJ=$(PREFIX_OBJ)contributions-
-	copy src\contrib.h $(ADMB_HOME)\contrib\include
+ecolib-opt:
+	$(MAKE) CXXFLAGS="-DOPT_LIB $(CXXFLAGS)" DISKDIR=..\..\dist\contrib /f ..\..\..\..\contrib\ecolib\Makefile
+
+ecolib-saf:
+	$(MAKE) CXXFLAGS="$(CXXFLAGS)" DISKDIR=..\..\dist\contrib /f ..\..\..\..\contrib\ecolib\Makefile
+
+qfclib-opt:
+	$(MAKE) CXXFLAGS="-DOPT_LIB $(CXXFLAGS)" DISKDIR=..\..\dist\contrib /f ..\..\..\..\contrib\qfclib\Makefile
+
+qfclib-saf:
+	$(MAKE) CXXFLAGS="$(CXXFLAGS)" DISKDIR=..\..\dist\contrib /f ..\..\..\..\contrib\qfclib\Makefile
+
+contribo.lib:
+	lib /OUT:$@ /NOLOGO /IGNORE:4006 ../../objects/contrib-olp/*.obj
+
+contribs.lib:
+	lib /OUT:$@ /NOLOGO /IGNORE:4006 ../../objects/contrib-slp/*.obj
 
 test:
-	cd ecolib& $(MAKE) test
-	cd qfclib& $(MAKE) test
+	CXXFLAGS="" $(MAKE) --directory=ecolib test
+	CXXFLAGS="" $(MAKE) --directory=qfclib test
 
 clean:
-	cd ecolib& $(MAKE) clean
-	cd qfclib& $(MAKE) clean
-	cd statslib& $(MAKE) clean
-	cd ad2csv& $(MAKE) clean
+	$(MAKE) --directory=ad2csv clean
+	$(MAKE) --directory=ecolib clean
+	$(MAKE) --directory=qfclib clean
+	$(MAKE) --directory=statslib clean
+	rm -rf $(DISK)/contrib
+	rm -rf $(LIBPATH)/contrib-olp
+	rm -rf $(LIBPATH)/contrib-slp

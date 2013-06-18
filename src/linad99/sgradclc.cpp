@@ -5,8 +5,8 @@
  * Copyright (c) 2008-2012 Regents of the University of California 
  */
 /**
-  \file sgradclc.cpp
-  Functions to compute gradient from the global \ref gradient_structure.
+ * \file
+ * Description not yet available.
  */
 #include "fvar.hpp"
 
@@ -77,9 +77,8 @@
 //void KLUDGEX(void * p);
 
 /**
-  Compute the gradient from the data stored in the global \ref gradient_structure.
-  \param nvar Number of variables in the gradient.
-  \param _g Vector from 1 to nvar. On return contains the gradient.
+ * Description not yet available.
+ * \param
  */
 void gradcalc(int nvar, const dvector& _g)
 {
@@ -248,6 +247,8 @@ do
 }
 
 /**
+ * Description not yet available.
+ * \param
  */
 void gradient_structure::save_arrays()
 {
@@ -300,7 +301,8 @@ void gradient_structure::save_arrays()
   }
   else
   {
-     humungous_pointer src = ARRAY_MEMBLOCK_BASE;
+     char * src = ARRAY_MEMBLOCK_BASE;
+     //humungous_pointer src = ARRAY_MEMBLOCK_BASE;
      lseek(gradient_structure::GRAD_STACK1->_VARSSAV_PTR,0L,SEEK_SET);
      #if defined(DOS386)
      //#if DOS386==1
@@ -322,6 +324,8 @@ void gradient_structure::save_arrays()
 }
 
 /**
+ * Description not yet available.
+ * \param
  */
 void gradient_structure::restore_arrays()
 {
@@ -342,8 +346,10 @@ void gradient_structure::restore_arrays()
      unsigned long max_move=50000;
 
      long int left_to_move=bytes_needed;
-     humungous_pointer src = ARRAY_MEMBLOCK_SAVE;
-     humungous_pointer dest = ARRAY_MEMBLOCK_BASE;
+     //humungous_pointer src = ARRAY_MEMBLOCK_SAVE;
+     //humungous_pointer dest = ARRAY_MEMBLOCK_BASE;
+     char *  src = ARRAY_MEMBLOCK_SAVE;
+     char * dest = ARRAY_MEMBLOCK_BASE;
      while(left_to_move > max_move)
      {
        memcpy((char*)dest,(char*)src,max_move);
@@ -353,11 +359,13 @@ void gradient_structure::restore_arrays()
      }
      memcpy((char*)dest,(char*)src,left_to_move);
     #endif
-    ARRAY_MEMBLOCK_SAVE.free();
+    free(ARRAY_MEMBLOCK_SAVE);
+    ARRAY_MEMBLOCK_SAVE=0;
   }
   else
   {
-    humungous_pointer dest = ARRAY_MEMBLOCK_BASE;
+    //humungous_pointer dest = ARRAY_MEMBLOCK_BASE;
+    char * dest = ARRAY_MEMBLOCK_BASE;
     lseek(gradient_structure::GRAD_STACK1->_VARSSAV_PTR,0L,SEEK_SET);
     #if defined(DOS386)
     // #if DOS386==1
@@ -381,6 +389,8 @@ void gradient_structure::restore_arrays()
 }
 
 /**
+ * Description not yet available.
+ * \param
  */
 void gradient_structure::save_variables()
 {
@@ -402,6 +412,8 @@ void gradient_structure::save_variables()
 }
 
 /**
+ * Description not yet available.
+ * \param
  */
 void gradient_structure::restore_variables()
 {
@@ -418,6 +430,8 @@ void gradient_structure::restore_variables()
 void KLUDGEX(void * p){;}
 
 /**
+ * Description not yet available.
+ * \param
  */
 void reset_gradient_stack(void)
 {
@@ -433,13 +447,8 @@ static int inner_count=0;
 //static grad_stack_entry * pgse = (grad_stack_entry*) (0x1498fffc);
 
 /**
-  Sets the gradient stack entry for a function or operator with a single
-  independent variable.
-  \param func Pointer to function to compute the derivative of the dependent 
-   variable with respect to the independent variable. 
-   Function prototype: void func(void);
-  \param dep_addr Address of dependent variable; pointer to double.
-  \param ind_addr1 Address of independent variable; pointer to double
+ * Description not yet available.
+ * \param
  */
 void grad_stack::set_gradient_stack1(void (* func)(void),
   double * dep_addr,double * ind_addr1)
@@ -477,6 +486,8 @@ void grad_stack::set_gradient_stack1(void (* func)(void),
 }
 
 /**
+ * Description not yet available.
+ * \param
  */
 void test_the_pointer(void)
 {

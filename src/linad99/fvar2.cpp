@@ -30,8 +30,8 @@
 void gradfree(dlink *);
 
 /**
-  Creates an entry in the gradient structure linked list. 
-  \return Pointer instance of class double_and_int
+ * Description not yet available.
+ * \param
  */
 double_and_int * gradnew()
 {
@@ -128,8 +128,7 @@ dvariable::dvariable(const dvariable& t)
     }
 
 /**
-   Specialized constructor that does not create unnecessary entries 
-   in the gradient structure; see function \ref nograd_assign.
+   Phony constructor designed to avoid ambiguous references?
  */
     dvariable::dvariable(kkludge_object)
     {
@@ -148,7 +147,7 @@ dvariable::dvariable(const dvariable& t)
 /**
    Creates dvariable instance from a double constant.
    Creates new dvariable object,
-   Sets Value to the argument and initializes derivatve information.
+   sets value to zero and initializes derivatve information.
    \param t constant double passed by value.
  */
   dvariable::dvariable( CGNU_DOUBLE t)
@@ -162,10 +161,10 @@ dvariable::dvariable(const dvariable& t)
 /**
    Creates dvariable instance from a int constant.
    Creates new dvariable object,
-   Sets value to the argument and initializes derivatve information.
-   \param t constant integer passed by reference.
+   sets value to zero and initializes derivatve information.
+   \param t constant int passed by reference.
  */
-  dvariable::dvariable(const int& t)
+dvariable::dvariable(const int& t)
   {
     v=gradnew();
     v->x=t;

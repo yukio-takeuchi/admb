@@ -18,16 +18,13 @@ DATA_SECTION
   init_ivector cor_block_start(1,M) 		// Not used: remove
   init_ivector cor_block_stop(1,M) 		// Not used: remove
   init_int numb_cor_params			// Total number of correlation parameters to be estimated
-  init_int like_type_flag   			// 0 poisson 1 binomial 2 negative binomial 3 Gamma 4 beta 5 gaussian 6 truncated poisson 7 trunc NB 8 logistic 9 betabinomial
+  init_int like_type_flag   			// 0 poisson 1 binomial 2 negative binomial 3 Gamma 4 beta 5 gaussian 6 truncated poisson 7 trunc NB
   init_int link_type_flag   			// 0 log 1 logit 2 probit 3 inverse 4 cloglog 5 identity
   init_int rlinkflag                            // robust link function?
   init_int no_rand_flag   			// 0 have random effects 1 no random effects
   init_int zi_flag				// Zero inflation (zi) flag: 1=zi, 0=no zi
-  // init_int zi_model_flag                        // ZI varies among groups/covariates?
-  // init_matrix G(1,n,1,ncolG)                    // Design matrix for zero-inflation (fixed effects)
   // TESTING: remove eventually?
   init_int zi_kluge				// apply zi=0.001?
-  init_int poiss_prob_bound                     // bound poiss prob away from zero?
   init_int nbinom1_flag				// 1=NBinom1, 0=NBinom2
   init_int intermediate_maxfn			// Not used
   init_int has_offset				// Offset in linear predictor: 0=no offset, 1=with offset
@@ -37,11 +34,9 @@ DATA_SECTION
   // Makes design matrix X orthogonal to improve numeric stability
   matrix rr(1,n,1,6)
   matrix phi(1,p,1,p)
-  number ymax           // maximum y for bounding mean in nb and pois
  LOC_CALCS
   int i,j;
   phi.initialize();
-  ymax=log(15.0*max(y)+1);
   for (i=1;i<=p;i++)
   {
     phi(i,i)=1.0;
@@ -100,7 +95,7 @@ PARAMETER_SECTION
 
   // Determines "phases", i.e. when the various parameters  becomes active in the optimization process
   int pctr = 2;		// "Current phase" in the stagewise procedure
-  // FIXME: move trunc_poisson, logistic earlier in like_type hierarchy (or add a scale parameter flag vector)
+  // FIXME: move trunc_poisson earlier in like_type hierarchy (or add a scale parameter flag vector)
   int alpha_phase = like_type_flag>1 && like_type_flag!=6 ? pctr++ : -1;        // Phase 2 if active
   int zi_phase = zi_flag ? pctr++ : -1;                      			// After alpha
   int rand_phase = no_rand_flag==0 ? pctr++ : -1;    				// SD of RE's
@@ -111,7 +106,7 @@ PARAMETER_SECTION
   double log_alpha_lowerbound = nbinom1_flag==1 ? 0.001 : -5.0 ;
   ncolS = m;                       	// Uncorrelated random effects
   for (int i=1;i<=M;i++)                // Modifies the correlated ones
-    if(cor_flag(i)>0)
+    if(cor_flag(i))
       ncolS(i) = m(i)*(m(i)+1)/2;
   int nS = sum(ncolS);             	//  Total number
  END_CALCS
@@ -173,31 +168,31 @@ PROCEDURE_SECTION
       dvar_matrix tmpS(1,m(i_m),1,m(i_m));
       tmpS.initialize();
 
-      if(cor_flag(i_m)>0) // full cor structure
+      if(cor_flag(i_m))
       {
         int ii=1;
         L(1,1)=1;
         for (i=1;i<=m(i_m);i++)
         {
-          L(i,i)=1; // set diagonal
+          L(i,i)=1;
           for (int j=1;j<i;j++)
-            L(i,j)=tmpL1(i2++); // fill in off-diag
-          L(i)(1,i)/=norm(L(i)(1,i)); // ???
+            L(i,j)=tmpL1(i2++);
+          L(i)(1,i)/=norm(L(i)(1,i));
         }
         for (i=1;i<=m(i_m);i++)
-          L(i)*=exp(tmpL(i1++)); //scale row
+          L(i)*=exp(tmpL(i1++));
       }
-      else  /// diagonal cor structure
+      else
       {
         for (i=1;i<=m(i_m);i++)
           L(i,i)=exp(tmpL(i1++));
       }
 
-      tmpS=L*trans(L);  // square
+      tmpS=L*trans(L);
 
-      for (i=1;i<=m(i_m);i++) // fill in var-cov vector
+      for (i=1;i<=m(i_m);i++)
       {
-          if(cor_flag(i_m)>0)
+          if(cor_flag(i_m))
             for(j=1;j<i;j++)
               S(ii++) = tmpS(i,j);
           S(ii++) = tmpS(i,i);
@@ -221,8 +216,6 @@ SEPARABLE_FUNCTION void log_lik(int _i,const dvar_vector& tmpL,const dvar_vector
   int i,j, i_m, Ni;
   double e1=1e-8; // formerly 1.e-20; current agrees with nbmm.tpl
   double e2=1e-8; // formerly 1.e-20; current agrees with nbmm.tpl
-  double e3=1e-6; // Poisson prob=0 hack
-  double e4=1e-10; // Poisson prob=0 hack for last phase
 
   dvariable alpha = e2+exp(log_alpha);
 
@@ -235,7 +228,7 @@ SEPARABLE_FUNCTION void log_lik(int _i,const dvar_vector& tmpL,const dvar_vector
     dvar_matrix L(1,m(i_m),1,m(i_m));
     L.initialize();
 
-    if(cor_flag(i_m)>0)
+    if(cor_flag(i_m))
     {
       L(1,1)=1;
       for (i=1;i<=m(i_m);i++)
@@ -403,14 +396,7 @@ SEPARABLE_FUNCTION void log_lik(int _i,const dvar_vector& tmpL,const dvar_vector
   switch(like_type_flag)
   {
     case 0:   // Poisson
-	if (poiss_prob_bound==0) { 
-	    tmpl =  log_density_poisson(y(_i,1),lambda);
-	} else {
-          if (cph<5)  
-	    tmpl = log(e3+exp(log_density_poisson(y(_i,1),lambda)));  // DF hack May 2013
-          else
-	    tmpl = log(e4+exp(log_density_poisson(y(_i,1),lambda)));  // DF hack May 2013
-	}
+      tmpl = log_density_poisson(y(_i,1),lambda);
       break;
     case 1:   // Binomial: y(_i,1)=#successes, y(_i,2)=#failures, 
       if (p_y==1) {
@@ -426,11 +412,9 @@ SEPARABLE_FUNCTION void log_lik(int _i,const dvar_vector& tmpL,const dvar_vector
       break;
     case 2:   // neg binomial
       if (cph<2)  // would like to use alpha_phase rather than 2 but it's in local_calcs
-      	   tmpl = -square(log(1.0+y(_i,1))-log(1.0+lambda));
-      if (cph<4)  
-	  tmpl = -(1.0+y(_i,1))*square(log(1.0+y(_i,1))-log(1.0+lambda));
+        tmpl = -square(log(1.0+y(_i,1))-log(1.0+lambda));
       else
-	  tmpl = log_negbinomial_density(y(_i,1),lambda,tau);
+        tmpl = log_negbinomial_density(y(_i,1),lambda,tau);
       break;
     case 3: // Gamma 
         tmpl = log_gamma_density(y(_i,1),alpha,alpha/lambda);
@@ -460,15 +444,9 @@ SEPARABLE_FUNCTION void log_lik(int _i,const dvar_vector& tmpL,const dvar_vector
         tmpl = log_negbinomial_density(y(_i,1),lambda,tau)-log(1.0-pow(1.0+lambda/alpha,-alpha));
       break;
     case 8: // logistic 
-	tmpl = -log(alpha) + (y(_i,1)-lambda)/alpha - 2*log(1+exp((y(_i,1)-lambda)/alpha));
+      tmpl = -log(alpha) + (y(_i,1)-lambda)/alpha - 2*log(1+exp((y(_i,1)-lambda)/alpha));
       break;
-    case 9: // beta-binomial
-	Ni = sum(y(_i));
-	tmpl = log_comb(Ni,y(_i,1)) + // log(C(Ni,y(_i,1)))
-	    gammln(y(_i,2)+alpha*(1-lambda))+gammln(y(_i,1)+alpha*lambda)-gammln(Ni+alpha) + // lbeta(...)
-	    -(gammln(alpha*(1-lambda))+gammln(alpha*lambda)-gammln(alpha)); // lbeta(...)
-	break;
-  default:
+    default:
       cerr << "Illegal value for like_type_flag" << endl;
       ad_exit(1);
   }
@@ -476,9 +454,6 @@ SEPARABLE_FUNCTION void log_lik(int _i,const dvar_vector& tmpL,const dvar_vector
   // Zero inflation part 
   // zi_kluge: apply ZI whether or not zi_flag is true
   if(zi_flag || zi_kluge) {
-    // if (zi_model_flag) {
-    // 
-    // }
     if(y(_i,1)==0)
       g -= log(e2+pz+(1.0-pz)*mfexp(tmpl));
     else
@@ -503,8 +478,6 @@ GLOBALS_SECTION
   ofstream ofs12("b2");
   ofstream ofs13("s1");
   ofstream ofs14("s2");
-
-  //void add_slave_suffix(const adstring & s){}
 
   dvariable betaln(const prevariable& a,const prevariable& b )
   {

@@ -18,7 +18,7 @@ void test_smartlist::reset(void)
 {
   bptr=buffer; 
   eof_flag=0;
-  lseek(fp, 0L, SEEK_SET);
+  /*off_t pos=*/lseek(fp,0L,SEEK_CUR);
   written_flag=0;
   end_saved=0;
 }

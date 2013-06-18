@@ -7,32 +7,23 @@
 #include <fvar.hpp>
 #include <string.h>
 #include <stdlib.h>
+#include <safe_mem.h>
 
 void adstring::allocate(int sz)
 {
-  shape = new adstring_shape(sz);
-  s =  new unsigned char[sz+1];
+  shape = (adstring_shape*)mem_malloc(sizeof(adstring_shape));
+  shape->sz = sz;
+#if (defined __ZTC__) || (defined __NDPX__)
+  s =  (char*)mem_malloc(sz+1);
+#else
+  s =  (unsigned char*)mem_malloc(sz+1);
+#endif
   if (!s) {
     cerr << "Error allocating memory for adstring" << endl;
     exit(1);
   }
-  s--;
 }
 
-void adstring::deallocate()
-{
-  if (shape)
-  {
-    delete shape;
-  }
-  shape=0;
-  if (s)
-  {
-    s++;
-    delete [] s;
-    s=0;
-  }
-}
 adstring::operator unsigned char * ()
 {
   return (unsigned char*)s + 1;

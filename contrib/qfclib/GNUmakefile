@@ -1,34 +1,38 @@
+.PHONY: all test
+.SUFFIXES: .obj .cpp
+
+vpath %.obj $(LIBPATH)
+
 include objects.lst
 
-all: $(addprefix $(PREFIX_OBJ), $(OBJECTS))
+all: $(OBJECTS)
+ifeq ($(CXX),g++.exe)
+	copy qfclib.h $(DISKDIR)
+else
+	cp qfclib.h $(DISKDIR)
+endif
 
 test:
-	ADMB_HOME="$(ADMB_HOME)" PATH="$(ADMB_HOME)/bin:$(PATH)" make --directory=tests
+	make --directory=test
 
 clean:
-ifneq ($(SHELL),sh.exe)
-	@rm -vf tests/testfunction.htp
-	@rm -vf tests/testfunction
-	@rm -vf tests/nf1b2list1
-	@rm -vf tests/variance
-	@rm -vf tests/f1b2list12
-	@rm -vf tests/f1b2list13
-	@rm -vf tests/testfunctionre.log
-	@rm -vf tests/testfunctionre.cpp
-	@rm -vf tests/eigv.rpt
-	@rm -vf tests/testfunction.log
-	@rm -vf tests/testfunction.cpp
-	@rm -vf tests/testfunctionre.htp
-	@rm -vf tests/nf1b2list12
-	@rm -vf tests/f1b2list1
-	@rm -vf tests/nf1b2list13
-	@rm -vf tests/fmin.log
-	@rm -vf tests/testfunctionre
-endif
+	@rm -vf test/testfunction.htp
+	@rm -vf test/testfunction
+	@rm -vf test/nf1b2list1
+	@rm -vf test/variance
+	@rm -vf test/f1b2list12
+	@rm -vf test/f1b2list13
+	@rm -vf test/testfunctionre.log
+	@rm -vf test/testfunctionre.cpp
+	@rm -vf test/eigv.rpt
+	@rm -vf test/testfunction.log
+	@rm -vf test/testfunction.cpp
+	@rm -vf test/testfunctionre.htp
+	@rm -vf test/nf1b2list12
+	@rm -vf test/f1b2list1
+	@rm -vf test/nf1b2list13
+	@rm -vf test/fmin.log
+	@rm -vf test/testfunctionre
 
-$(PREFIX_OBJ)%.obj: %.cpp
-ifeq ($(CXX),cl)
-	$(CXX) /c $(CXXFLAGS) /Fo$@ $<
-else
-	$(CXX) -c $(CXXFLAGS) -o$@ $<
-endif
+%.obj: %.cpp
+	$(CXX) $(CXXFLAGS) $< -o $(LIBPATH)/$*.obj

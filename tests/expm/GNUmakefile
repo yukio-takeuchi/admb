@@ -1,9 +1,11 @@
+.PHONY: run
+
 TARGET=expm
 
 all: clean $(TARGET) run
 
 $(TARGET): $(TARGET).tpl $(TARGET).dat
-	ADMB_HOME="$(ADMB_HOME)" PATH="$(ADMB_HOME)/bin:${PATH}" admb -s $(TARGET)
+	export ADMB_HOME=$(ADMB_HOME); export PATH=$(ADMB_HOME)/bin:${PATH}; admb -s $(TARGET)
 
 run:
 	@printf "Started run:\n"

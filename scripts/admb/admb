@@ -5,29 +5,11 @@ Build AD Model Builder executable from TPL.\n
   -d     Create DLL
   -g     Insert debugging symbols
   -r     Create ADMB-RE
-  -s     Enforce safe bounds (default)
-  -O     Use optimized mode
+  -s     Enforce safe bounds
   model  Filename prefix, e.g. simple\n"'
 if [[ "$1" == "" ]]; then help; exit; fi
 if [[ "$1" == "-help" ]]; then help; exit; fi
 if [[ "$1" == "--help" ]]; then help; exit; fi
-
-if [ ! -z "$ADMB_HOME" ]; then
-unset ADMB_HOME
-fi
-
-FILE=$0
-DIRECTORY=$(cd `dirname $FILE` && pwd)
-while [ -h "${FILE}" ]; do 
-  pushd $DIRECTORY &> /dev/null
-  FILE=$(readlink $DIRECTORY/admb)
-  DIRECTORY=$(cd `dirname $FILE` && pwd)
-  popd &> /dev/null
-done
-pushd "$DIRECTORY/.." &> /dev/null
-declare -rx ADMB_HOME="$PWD"
-popd &> /dev/null
-PATH=$ADMB_HOME/bin:$PATH
 
 # Pop args until model=$1
 unset bounds
@@ -36,11 +18,8 @@ unset dll
 unset g
 unset r
 unset s
-unset c
 tpl2cpp=tpl2cpp
-s=-s
-bounds=-bounds
-while getopts "dgrscO" A; do
+while getopts "dgrs" A; do
   case $A in
     d) d=-d; dll=-dll
        ;;
@@ -49,10 +28,6 @@ while getopts "dgrscO" A; do
     r) r=-r; tpl2cpp=tpl2rem
        ;;
     s) s=-s; bounds=-bounds
-       ;;
-    O) s=; bounds=
-       ;;
-    c) c=1
        ;;
     *)
        help
@@ -65,7 +40,6 @@ shift $((OPTIND-1))
 tpls=
 srcs=
 objs=
-nontpls=
 
 for file in $*
 do
@@ -76,10 +50,8 @@ do
     tpls="$tpls ${file%.*}"
   elif [ "$extension" = "cpp" -o "$extension" = "c" ]; then
     srcs="$srcs $file"
-    nontpls="$nontpls $file"
   elif [ "$extension" = "o" -o "$extension" = "obj" ]; then
     objs="$objs $file"
-    nontpls="$nontpls $file"
   fi
 done
 
@@ -90,10 +62,6 @@ do
     echo -e "\\nError: $model.tpl not found\\n"
     exit 1
   fi
-
-  rm -vf classdef.tmp xxdata.tmp xxhtop.tmp xxhtopm.tmp xxglobal.tmp xxtopm.tmp 
-  rm -vf xxalloc.tmp xxalloc1.tmp xxalloc2.tmp xxalloc3.tmp xxalloc4.tmp xxalloc5.tmp xxalloc6.tmp header.tmp 
-  rm -vf tfile1 tfile2 tfile3 tfile4 tfile5
   rm -f $model.cpp $model.htp $model.o $model
 
   CMD="$tpl2cpp $bounds $dll $model"
@@ -106,8 +74,7 @@ do
   tplsrcs="$tplsrcs ${model%.*}.cpp"
 done
 
-tplobjs=
-for file in $tplsrcs
+for file in $tplsrcs $srcs
 do
   if [ ! -f $file ]; then
     echo -e "\\nError: $file not found\\n"
@@ -124,35 +91,15 @@ do
     echo -e "\\nError: Could not compile $file\\n"
     exit 1
   fi
-  tplobjs="$tplobjs ${file%.*}.o"
 done
 
 for file in $srcs
 do
-  if [ ! -f $file ]; then
-    echo -e "\\nError: $file not found\\n"
-    exit 1
-  fi
-  if [[ -z "$CXXFLAGS" ]]; then
-    CMD="adcomp $d $g $r $s $file"
-  else
-    CMD="CXXFLAGS=\"$CXXFLAGS\" adcomp $d $g $r $s $file"
-  fi
-  echo -e \\n\*\*\* $CMD
-  eval $CMD
-  if [[ ! -f ${file%.*}.o ]]; then
-    echo -e "\\nError: Could not compile $file\\n"
-    exit 1
-  fi
-  objs="${file%.*}.o $objs"
+  f=${file%.*}
+  objs="$f.o $objs"
 done
 
-if [ ! -z "$c" ]; then
-  echo -e "\\nSuccessfully compiled \"$tplobjs $objs\".\\n"
-  exit 0
-fi 
-
-for file in $tplobjs
+for file in $tpls
 do
   model=${file%.*}
   if [[ -z "$LDFLAGS" ]]; then
@@ -165,48 +112,13 @@ do
   if [[ -z $dll ]]; then 
     if [[ ! -f $model ]]; then 
         echo -e "\\nError: Could not build $model\\n"
-        exit 1
     fi
   else
     if [[ ! -f $model.so ]]; then
         echo -e "\\nError: Could not build $model.so\\n"
-        exit 1
     fi
   fi
 done
-
-if [[ "$tplobjs" == "" ]]; then
-  listobjs=
-  for file in $nontpls
-  do
-    extension="${file#*.}"
-    if [ "$extension" = "o" -o "$extension" = "obj" ]; then
-      listobjs="$listobjs $file"
-    else
-      listobjs="$listobjs ${file%.*}.o"
-    fi
-  done
-
-  CMD="adlink $d $g $r $s $listobjs"
-  echo -e \\n\*\*\* $CMD
-  eval $CMD
-
-  declare -a amodel=( $listobjs )
-  m=${amodel[0]}
-  m2=${m%.*}
-
-  if [[ -z $dll ]]; then 
-    if [[ ! -f $m2 ]]; then 
-        echo -e "\\nError: Could not build $m2\\n"
-        exit 1
-    fi
-  else
-    if [[ ! -f $m2.so ]]; then
-        echo -e "\\nError: Could not build $m2.so\\n"
-        exit 1
-    fi
-  fi
-fi
 
 echo -e "\\nSuccessfully built executable.\\n"
 exit 0

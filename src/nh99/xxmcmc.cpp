@@ -95,47 +95,12 @@ void ad_update_mcmchist_report(dmatrix& mcmc_values,ivector& number_offsets,
 
 void ADSleep(int);
 
-/**
- * Monte Carlo Markov Chain minimization routine
- * Approximate the target distribution by performing a random walk
-   across parameter space, integrating at each step.
- * This routine also parses the command line arguments and performs actions for
-   the following ones:
- * -mcdiag     Use diagonal covariance matrix with covariance = dscale.
- * -mcrb N     Modify covariance matrix to reduce high correlations. 1<=N<=9
-               where 1=10% and 9=90%.
- * -mcec       Read in empirical covariance matrix. This is a file with the
-               program name prepended to extension '.ecm'.
- * -mcpin NAME Read in starting values for MCMC from file NAME. NAME must be a
-               valid ADMB '.par' file.
- * -mcscale    Dynamically scales covariance matrix until a reasonable
-               acceptance rate is observed.
- * -nosdmcmc   Turn off calculation os sdreport variables during mcsave phase
-               (saves a lot of CPU time).
- * -mcu        Use uniform multivariate distributions as bounds, if this is not
-               specified then random normal multivariate distributions will be
-               used.
- * -mcnoscale  Don't rescale step size based on acceptance rate.
- * -mcr        Continue MCMC from a previous -mcmc call. Uses '.mcm' file to
-               accomplish this.
- * -mcsave N   Save parameter values from every Nth simulation instead of every
-               single one.
- * -mcprobe N  Use probing strategy, 0.00001<N<=0.499. See the function
-               new_probing_bounded_multivariate_normal() in prmonte.cpp
-               for more detail.
- * -mcgrope    Deprecated, equivalent to -mcprobe
- * \param int nmcmc The number of MCMC simulations to run.
- * \param int iseed0 Initial seed value for simulations.
- * \param double dscale Scale value used only if -mcdiag is specified.
- * \param int restart_flag Restart the MCMC, even if -mcr is specified.
- * \return Nothing.
- */
-void function_minimizer::mcmc_routine(int nmcmc,int iseed0, double dscale,
+void function_minimizer::mcmc_routine(int nmcmc,int iseed0,double dscale,
   int restart_flag)
- {
+{
   uostream * pofs_psave=NULL;
   dmatrix mcmc_display_matrix;
-  //int mcmc_save_index=1;
+  //int mcmc_save_index=1; 
   //int mcmc_wrap_flag=0;
   //int mcmc_gui_length=10000;
   int no_sd_mcmc=0;
@@ -509,7 +474,7 @@ void function_minimizer::mcmc_routine(int nmcmc,int iseed0, double dscale,
           int iii=atoi(ad_comm::argv[on+1]);
           if (iii <=0)
           {
-            cerr << " Invalid option following command line option -mcscale -- "
+            cerr << " Invalid option following command line option -mcball -- "
               << endl << " ignored" << endl;
           }
           else
@@ -626,21 +591,16 @@ void function_minimizer::mcmc_routine(int nmcmc,int iseed0, double dscale,
       double pprobe=0.05;
       int probe_flag=0;
       int nopt=0;
-      on = option_match(ad_comm::argc, ad_comm::argv, "-mcprobe", nopt);
-      if (on == -1)
-      {
-        on = option_match(ad_comm::argc,ad_comm::argv,"-mcgrope",nopt);
-      }
-      if (on > -1)
+      if ( (on=option_match(ad_comm::argc,ad_comm::argv,"-mcgrope",nopt))>-1)
       {
         probe_flag=1;
         if (nopt)
         {
-          char* end = 0;
+          char * end;
           pprobe=strtod(ad_comm::argv[on+1],&end);
           if (pprobe<=0.00001 || pprobe > .499) 
           {
-            cerr << "Invalid argument to option -mcprobe" << endl;
+            cerr << "Invalid argument to option -mcgrope" << endl;
             pprobe=-1.0;
             probe_flag=0;
           }
@@ -922,16 +882,6 @@ void function_minimizer::mcmc_routine(int nmcmc,int iseed0, double dscale,
   }
 }
 
-/**
- * Writes the covariance matrix out to a file, which is prog_name
- * prepended to the extension '.ecm'.
- * Also writes the sorted eigenvalues of the covariance matrix to the screen.
- * \param int ncor
- * \param dvector& s_mean
- * \param dmatrix& s_covar
- * \param adstring& prog_name
- * \return Nothing.
- */
 void write_empirical_covariance_matrix(int ncor, const dvector& s_mean,
   const dmatrix& s_covar,adstring& prog_name)
 {
@@ -968,14 +918,7 @@ void write_empirical_covariance_matrix(int ncor, const dvector& s_mean,
  */
 }
 
-/**
- * Reads the covariance matrix from a file, which is the program name
- * prepended to the extension '.ecm'.
- * \param int nvar
- * \param dmatrix& S
- * \param adstring& prog_name
- * \return Nothing, but S has been assigned to the contents of the file.
- */void read_empirical_covariance_matrix(int nvar, const dmatrix& S, const adstring& prog_name)
+void read_empirical_covariance_matrix(int nvar, const dmatrix& S, const adstring& prog_name)
 {
   adstring infile_name=ad_comm::adprogram_name + adstring(".ecm");
   uistream ifs((char*)(infile_name));

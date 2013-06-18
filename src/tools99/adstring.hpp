@@ -52,6 +52,7 @@
   #endif
 #endif
 */
+#define BOR_CONST const
 
 #include "clist.h"
 #include <string.h>
@@ -98,7 +99,6 @@ class adstring : public clist
   unsigned char * s;
 #endif
   void allocate(int sz);
-  void deallocate(void);
   friend class adstring_array;
 public :
   friend std::ostream & operator<<(std::ostream & c, const adstring & t);
@@ -228,16 +228,35 @@ int pos(const adstring& substr, const adstring& s);
 #  endif
 #endif
 
-class vector_shape;
+#ifndef _VECTOR_SHAPE
+  #define _VECTOR_SHAPE
+  class vector_shape
+  {
+    unsigned int ncopies;
+    int index_min;
+    int index_max;
+    void shift(int min);
+    friend class dvector;
+    friend class dvar_vector;
+    friend class ivector;
+    friend class lvector;
+    friend class ptr_vector;
+  public:
+    vector_shape(int& lb, int& lu) {index_min=lb;index_max=lu;ncopies=0;}
+    int indexmin(void) const {return index_min;}
+    int indexmax(void) const {return index_max;}
+  };
+#endif
+
 
 class adstring_array : public clist
 {
   vector_shape * shape;
   adstring ** ptr;
 public:
-  int size() const;
-  int indexmin(void) const;
-  int indexmax(void) const;
+  int size() const { return shape->indexmax()-shape->indexmin() + 1; }
+  int indexmin(void) const { return shape->indexmin();}
+  int indexmax(void) const { return shape->indexmax();}
   adstring_array(const adstring_array& sa);
   ~adstring_array();
   adstring_array(int min,int max);
