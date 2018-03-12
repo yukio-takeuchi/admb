@@ -114,6 +114,14 @@ class gradient_structure
    {
       return (double*)ARRAY_MEMBLOCK_BASE;
    }
+/*
+  static dvariable* get_RETURN_ARRAY(const int i)
+  {
+    div_t ij = div(i, static_cast<int>(NUM_RETURN_ARRAYS));
+    return RETURN_ARRAYS[ij.quot];
+  }
+*/
+
  private:
 #ifdef __BORLANDC__
    static long int CMPDIF_BUFFER_SIZE;

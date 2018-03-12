@@ -368,6 +368,11 @@ gradient_structure::gradient_structure(long int _size):
     memory_allocate_error("fp", (void *) fp);
   }
 
+  if (arr_link::get_xpool() == NULL)
+  {
+    arr_link::allocate_xpool();
+  }
+
   // double_and_int * tmp;
 #ifdef DIAG
   cerr <<" In gradient_structure::gradient_structure()\n";
@@ -629,6 +634,10 @@ gradient_structure::~gradient_structure()
   else
   {
     ARRAY_MEMBLOCK_BASE.free();
+  }
+  if (arr_link::get_xpool() != NULL)
+  {
+    arr_link::deallocate_xpool();
   }
   if (ARR_LIST1 == NULL)
   {

@@ -50,7 +50,6 @@ TEST_F(test_arr_link, dvar_vector1to4)
   ASSERT_EQ(last->get_offset(), 0);
   ASSERT_EQ(last->get_status(), 1);
 }
-/*
 TEST_F(test_arr_link, initial_state_xpool)
 {
   ASSERT_TRUE(arr_link::get_xpool() == NULL);
@@ -78,11 +77,16 @@ TEST_F(test_arr_link, initial_state_xpool)
   const size_t chunk_size = 65000 - overhead;
   size_t expected = chunk_size / xpool->size;
   ASSERT_EQ(xpool->nelem, expected);
-  ASSERT_TRUE(static_cast<void*>(xpool->last_chunk + sizeof(char*)) == static_cast<void*>(xpool->first));
   void* ptr = static_cast<void*>(xpool->last_chunk + sizeof(char*));
-  dfpool::link* k = static_cast<dfpool::link*>(ptr);
-  cout << k << ' ' << xpool->head << endl;
-  cout << k->next << ' ' << xpool->head << endl;
-  ASSERT_TRUE(k->next == xpool->head);
+  ASSERT_TRUE(static_cast<void*>(ptr) == static_cast<void*>(xpool->first));
+  ASSERT_TRUE(static_cast<void*>(v.link_ptr->get_prev()) == NULL);
+  ASSERT_TRUE(static_cast<void*>(v.link_ptr->get_next()) == NULL);
+  ASSERT_EQ(v.link_ptr->get_status(), 1);
+  ASSERT_EQ(v.link_ptr->get_offset(), 0);
+  ASSERT_EQ(v.link_ptr->get_size(), sizeof(double_and_int) * 4);
+  ASSERT_TRUE(static_cast<void*>(gradient_structure::get_ARRAY_MEMBLOCK_BASE()) == v.shape->get_truepointer());
+  double_and_int* p2 = static_cast<double_and_int*>(v.shape->get_truepointer());
+  p2 -= v.indexmin();
+  ASSERT_TRUE(static_cast<void*>(v.va) == p2);
+  ASSERT_EQ(v.shape->get_ncopies(), 0);
 }
-*/

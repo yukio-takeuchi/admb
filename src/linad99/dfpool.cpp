@@ -26,8 +26,7 @@ vector_shape_pool * vector_shape::xpool =
 vector_shape_pool * vector_shapex::xpool =
     new vector_shape_pool(sizeof(vector_shapex));
 
-vector_shape_pool  * arr_link::xpool =
-    new vector_shape_pool (sizeof(arr_link));
+vector_shape_pool* arr_link::xpool = NULL;
 
 vector_shape_pool::vector_shape_pool(void) : dfpool(sizeof(vector_shape))
 { ;}
@@ -176,21 +175,25 @@ void dfpool::write_pointers(int mmin,int mmax)
 }
 #endif
 
+#if defined(__CHECK_MEMORY__)
 dfpool::link ** global_p=0;
+#endif
 
 /**
- * Description not yet available.
- * \param
- */
-void * dfpool::alloc(void)
+Returns the dfpool::link* head node from the linked list,
+then sets head to the next node in the list.
+*/
+void* dfpool::alloc()
 {
 #if defined(THREAD_SAFE)
   pthread_mutex_lock(&mutex_dfpool);
 #endif
+
   if (!head) grow();
-  link * p = head;
-  global_p = &head;
+  link* p = head;
+
 #if defined(__CHECK_MEMORY__)
+  global_p = &head;
   if(bad(p))
   {
     cerr << "Error in dfpool structure" << endl;
@@ -205,18 +208,22 @@ void * dfpool::alloc(void)
     }
   }
 #endif
+
   head = p->next;
-  num_allocated++;
-  //cout << "allocating " << p << endl;
+  ++num_allocated;
+
 #if defined(__CHECK_MEMORY__)
+  //cout << "allocating " << p << endl;
   if (p == pchecker)
   {
     cout << "trying to allocate already allocated object " << endl;
   }
 #endif
+
 #if defined(THREAD_SAFE)
   pthread_mutex_unlock(&mutex_dfpool);
 #endif
+
   return p;
 }
 #if defined(THREAD_SAFE)
@@ -231,8 +238,8 @@ void * tsdfpool::alloc(void)
 #endif
   if (!head) grow();
   link * p = head;
-  global_p = &head;
 #if defined(__CHECK_MEMORY__)
+  global_p = &head;
   if(bad(p))
   {
     cerr << "Error in dfpool structure" << endl;

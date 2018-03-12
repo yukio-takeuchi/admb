@@ -473,7 +473,7 @@ class kkludge_object{};
  * Description not yet available.
  * \param
  */
-class vector_shape_pool:public dfpool
+class vector_shape_pool: public dfpool
 {
 public:
   vector_shape_pool();
@@ -2034,11 +2034,21 @@ class arr_link
   unsigned int get_status() const
     { return status; }
 
-   friend double_and_int *arr_new(unsigned int);
-   friend void arr_free(double_and_int *);
-   friend void arr_remove(arr_link **);
-   friend void arr_free_remove(arr_link *);
-   friend void arr_free_add(arr_link *);
+  static vector_shape_pool* get_xpool()
+    { return xpool; }
+  static vector_shape_pool* allocate_xpool()
+    { return xpool = new vector_shape_pool(sizeof(arr_link)); }
+  static void deallocate_xpool()
+  {
+    delete xpool;
+    xpool = NULL;
+  }
+
+  friend double_and_int* arr_new(unsigned int);
+  friend void arr_free(double_and_int*);
+  friend void arr_remove(arr_link**);
+  friend void arr_free_remove(arr_link*);
+  friend void arr_free_add(arr_link*);
 };
 
 #if defined(__NUMBERVECTOR__)
