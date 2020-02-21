@@ -44,7 +44,7 @@ ifeq ($(CMDSHELL),cmd)
   OBJSDIR:=$(addsuffix \,$(OBJSDIR))
   ADMB_VERSION:=$(shell if exist ..\VERSION type ..\VERSION)
 else
-  INSTALL_DIR=/usr/local/
+  INSTALL_DIR?=/usr/local/
   DIST=../build/admb
   LIBSDIR=$(DIST)/lib/
   UNAME_S := $(shell uname -s)
@@ -676,7 +676,7 @@ ifeq ($(INSTALL_DIR),/usr/local/)
 	chmod a+rx ../build/admb/contrib
 	chmod a+r ../build/admb/bin/sed*
 	chmod a+r ../build/admb/include/*.*
-	chmod a+r ../build/admb/contrib/include/*.*
+	chmod a+r ../build/admb/include/contrib/*.*
 endif
 	cp -Rvf ../build/admb $(INSTALL_DIR)admb
 	ln -svf $(INSTALL_DIR)admb/bin/admb $(INSTALL_DIR)bin/admb
